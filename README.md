@@ -1,2 +1,2 @@
-# pipeline-components
-DevOps pipelines developed and defined via Components.
+# azdo-pipeline-components
+Azure DevOps pipelines developed and defined via Components.

@@ -1,0 +1,8 @@
+import React from 'react';
+
+
+export abstract class PipelineRenderer<TRoot, TNode> {
+	public abstract canRender(node: React.ReactNode): boolean;
+	public abstract compilePipeline(element: React.ReactNode): TRoot | null;
+	public abstract render(pipeline: TRoot): string;
+}

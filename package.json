@@ -1,0 +1,45 @@
+{
+	"name": "pipeline-components",
+	"version": "0.1.0",
+	"description": "Compile JSX/TSX React components into Azure DevOps YAML pipelines (and more platforms in the future)",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "tsc --build",
+		"test": "vitest run",
+		"dev": "vitest watch",
+		"compile": "tsx cli/render.ts",
+		"lint": "eslint . --ext .ts,.tsx"
+	},
+	"bin": {
+		"pipeline-components": "dist/bin.js"
+	},
+	"keywords": [
+		"azure-devops",
+		"github-actions",
+		"pipeline",
+		"react",
+		"tsx",
+		"yaml"
+	],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"debug": "^4.4.1",
+		"js-yaml": "^4.1.0",
+		"react": "^19.1.0",
+		"react-reconciler": "^0.32.0"
+	},
+	"devDependencies": {
+		"@types/debug": "^4.1.12",
+		"@types/js-yaml": "^4.0.5",
+		"@types/react": "^19.1.0",
+		"@types/react-reconciler": "^0.32.0",
+		"@typescript-eslint/eslint-plugin": "^6.0.0",
+		"@typescript-eslint/parser": "^6.0.0",
+		"eslint": "^8.0.0",
+		"tsx": "^4.7.0",
+		"typescript": "^5.0.0",
+		"vitest": "^1.0.0"
+	}
+}
