@@ -12,9 +12,7 @@
 			"cwd": "${workspaceFolder}",
 			"args": [
 				"./src/bin.ts",
-				"./examples/pipeline.tsx",
-				"--out",
-				"./examples/pipeline.generated.yaml"
+				"./examples/pipeline.tsx"
 			]
 		},
 	]
