@@ -1,0 +1,41 @@
+name: Release Pipeline
+'on':
+  push:
+    branches:
+      - main
+jobs:
+  bump-version-and-publish:
+    name: Bump Version and Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Linter
+        run: npm run lint
+      - name: Run Tests
+        run: npm test
+      - name: Automated Version Bump
+        id: version-bump
+        uses: phips28/gh-action-bump-version@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag-prefix: v
+          commit-message: 'ci: bumps version to {{version}}'
+      - name: Build
+        run: npm run build
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public

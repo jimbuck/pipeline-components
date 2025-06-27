@@ -11,7 +11,8 @@
 		"test:cli": "tsx ./src/bin.ts ./examples/pipeline.tsx --out ./examples/pipeline.generated.yaml",
 		"dev": "vitest watch",
 		"lint": "eslint",
-		"lint:fix": "eslint --fix"
+		"lint:fix": "eslint --fix",
+		"build:workflows": "tsx ./src/bin.ts .github/workflows/*.tsx"
 	},
 	"keywords": [
 		"azure-devops",
@@ -25,6 +26,7 @@
 	"license": "MIT",
 	"dependencies": {
 		"debug": "^4.4.1",
+		"fast-glob": "^3.3.3",
 		"js-yaml": "^4.1.0",
 		"react": "^19.1.0",
 		"react-reconciler": "^0.32.0"

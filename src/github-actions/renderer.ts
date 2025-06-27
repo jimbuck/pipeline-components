@@ -40,6 +40,10 @@ class GitHubActionsYamlRenderer extends PipelineRenderer<WorkflowNode> {
     return React.isValidElement(element) && (element.type === Workflow);
   }
 
+  public getFileExtension(): string {
+    return 'yml';
+  }
+
   public compilePipeline(element: React.ReactNode): WorkflowNode | null {
     if (!React.isValidElement(element) || element.type !== Workflow) {
       debug('Element is not a valid Workflow component');

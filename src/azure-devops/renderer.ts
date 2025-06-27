@@ -40,6 +40,10 @@ class AzureDevOpsYamlRenderer extends PipelineRenderer<PipelineNode> {
     return React.isValidElement(element) && (element.type === Pipeline);
   }
 
+  public getFileExtension(): string {
+    return 'yaml';
+  }
+
   public compilePipeline(element: React.ReactNode): PipelineNode | null {
     if (!React.isValidElement(element) || element.type !== Pipeline) {
       debug('Element is not a valid Pipeline component');
