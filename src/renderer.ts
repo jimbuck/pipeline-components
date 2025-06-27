@@ -9,7 +9,7 @@ const debug = debugFactory('pipeline-components:renderer');
 
 const renderers = [
   azureDevOpsYamlRenderer,
-] as PipelineRenderer<unknown, unknown>[];
+] as PipelineRenderer<unknown>[];
 
 export function renderPipeline(pipeline: React.ReactNode): string | null {
   for (const renderer of renderers) {

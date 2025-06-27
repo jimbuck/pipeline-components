@@ -19,7 +19,7 @@ export function resolveElement(element: React.ReactElement, isPrimitiveComponent
   if (typeof element.type === 'function' && !isPrimitiveComponent(element.type)) {
     // Custom component: handle function and class components
     if (element.type.prototype && element.type.prototype.isReactComponent) {
-  // Class component
+      // Class component
       const instance = new (element.type as new (props: unknown) => React.Component)(element.props);
       return instance.render() as React.ReactElement;
     } else {
