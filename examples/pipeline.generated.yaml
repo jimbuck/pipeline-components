@@ -1,0 +1,30 @@
+trigger:
+  branches:
+    include:
+    - main
+jobs:
+- job: Build
+  displayName: Build
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - displayName: Start Timer install-and-build
+    task: Powershell@2
+    inputs:
+      script: |-
+        start 
+        install-and-build
+  - displayName: Install
+    task: Powershell@2
+    inputs:
+      script: npm install
+  - displayName: Test
+    task: ShellScript@2
+    inputs:
+      script: npm test
+  - displayName: Stop Timer install-and-build
+    task: Powershell@2
+    inputs:
+      script: |-
+        stop 
+        install-and-build

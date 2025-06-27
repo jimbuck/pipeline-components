@@ -1,13 +1,15 @@
-#!/usr/bin/env tsx
-import { renderPipeline } from "./renderer";
+#!/usr/bin/env node
 import path from "path";
 import fs from "fs";
 import process from "process";
+import { pathToFileURL } from "url";
+
+import { renderPipeline } from "./renderer.js";
 
 const [, , inputPath, ...args] = process.argv;
 
 if (!inputPath) {
-  console.error("Usage: tsx cli/render.ts <input.tsx> [--out output.yaml]");
+  console.error("Usage: npx pipeline-components <input.tsx> [--out output.yaml]");
   process.exit(1);
 }
 
@@ -18,8 +20,8 @@ const outputPath = (() => {
 
 (async () => {
   const absPath = path.resolve(process.cwd(), inputPath);
-  const module = await import(absPath);
-  const tree = module.default;
+  const module = await import(pathToFileURL(absPath).href);
+  const tree = module.default();
 
   const yaml = renderPipeline(tree);
 

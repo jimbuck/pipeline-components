@@ -1,15 +1,41 @@
-import React, { PropsWithChildren } from 'react';
+import React from 'react';
 import yaml from 'js-yaml';
-
-import { PipelineRenderer } from '../shared/renderer';
-import { PipelineNode, Node, StageNode, JobNode, TaskNode } from './types';
-import { Job, Pipeline, Stage, Step } from './components';
-
 import debugFactory from 'debug';
+
+import { PipelineRenderer } from '../shared/renderer.js';
+import { flattenChildren, resolveElement } from '../shared/utils.js';
+
+import { PipelineNode, Node, StageNode, JobNode, TaskNode } from './types.js';
+import { Job, Pipeline, Stage, Step } from './components.js';
+import { isPrimitiveComponent } from './utils.js';
+
 const debug = debugFactory('pipeline-components:azure-devops');
 
-export class AzureDevOpsYamlRenderer extends PipelineRenderer<PipelineNode, Node> {
+function collectSteps(node: React.ReactNode): React.ReactElement[] {
+	const steps: React.ReactElement[] = [];
+	React.Children.forEach(node, child => {
+		if (React.isValidElement(child)) {
+			let resolved = resolveElement(child, isPrimitiveComponent);
 
+			// If the resolved element is still a custom component (not primitive), resolve it again
+			while (resolved && React.isValidElement(resolved) && typeof resolved.type === 'function' && !isPrimitiveComponent(resolved.type)) {
+				resolved = resolveElement(resolved, isPrimitiveComponent);
+			}
+
+			if (!resolved) return;
+
+			if (resolved.type === Step) {
+				steps.push(resolved);
+			} else {
+				// Fragment, custom component or other: recursively collect
+				steps.push(...collectSteps((resolved.props as any).children));
+			}
+		}
+	});
+	return steps;
+}
+
+class AzureDevOpsYamlRenderer extends PipelineRenderer<PipelineNode, Node> {
 	public canRender(element: React.ReactNode): boolean {
 		return React.isValidElement(element) && (element.type === Pipeline);
 	}
@@ -19,125 +45,104 @@ export class AzureDevOpsYamlRenderer extends PipelineRenderer<PipelineNode, Node
 			debug('Element is not a valid Pipeline component');
 			return null;
 		}
+		// If no children, return null (for empty pipeline test)
+		if (!(element.props as any).children) return null;
+		return this._compilePipeline(element);
+	}
 
-		if (!(element.props as React.PropsWithChildren).children) {
-			debug('Pipeline has no children');
-			return null;
-		}
-
-		const { trigger, pool, variables } = (element.props as React.PropsWithChildren<Omit<PipelineNode, 'stages' | 'jobs' | 'steps'>>);
-
-		const children = Array.isArray((element.props as React.PropsWithChildren).children) ? (element.props as React.PropsWithChildren).children as React.ReactElement[] : [(element.props as React.PropsWithChildren).children as React.ReactElement];
-
-		const stages = children.filter(child => React.isValidElement(child) && child.type === Stage);
-		const jobs = children.filter(child => React.isValidElement(child) && child.type === Job);
-		const tasks = children.filter(child => React.isValidElement(child) && child.type === Step);
+	private _compilePipeline(element: React.ReactElement): PipelineNode | null {
+		// Resolve custom components
+		let el = resolveElement(element, isPrimitiveComponent);
+		if (!el) return null;
+		const { trigger, pool, variables, children } = (el.props as any);
+		const childElements = flattenChildren(children);
+		const stages = childElements.filter(child => {
+			const resolved = resolveElement(child, isPrimitiveComponent);
+			return resolved && resolved.type === Stage;
+		});
+		const jobs = childElements.filter(child => {
+			const resolved = resolveElement(child, isPrimitiveComponent);
+			return resolved && resolved.type === Job;
+		});
+		const steps = childElements.filter(child => {
+			const resolved = resolveElement(child, isPrimitiveComponent);
+			return resolved && resolved.type === Step;
+		});
 		if (stages.length > 0) {
 			return {
 				trigger, pool, variables,
-				stages: stages.map(child => this.compileStage(child)).filter(Boolean) as StageNode[],
-			}
+				stages: stages.map(child => this._compileStage(resolveElement(child, isPrimitiveComponent)!)).filter(Boolean) as StageNode[],
+			};
 		} else if (jobs.length > 0) {
 			return {
 				trigger, pool, variables,
-				jobs: jobs.map(child => this.compileJob(child)).filter(Boolean) as JobNode[],
-			}
-		} else if (tasks.length > 0) {
+				jobs: jobs.map(child => this._compileJob(resolveElement(child, isPrimitiveComponent)!)).filter(Boolean) as JobNode[],
+			};
+		} else if (steps.length > 0) {
 			return {
 				trigger, pool, variables,
-				steps: tasks.map(child => this.compileStep(child)).filter(Boolean) as TaskNode[],
-			}
+				steps: steps.map(child => this._compileStep(resolveElement(child, isPrimitiveComponent)!)).filter(Boolean) as TaskNode[],
+			};
 		}
-
-		return {
-			trigger, pool, variables,
-			stages: [],
-		}
+		return { trigger, pool, variables, stages: [] };
 	}
 
-	private compileStage(element: React.ReactElement): StageNode | null {
-		if (!React.isValidElement(element) || element.type !== Stage) {
-			return null;
-		}
-
-		const { stage: stageName, displayName, pool, children, dependsOn, condition, variables } = element.props as PropsWithChildren<Omit<StageNode, 'jobs'>>;
-
-		const stage: StageNode = {
+	private _compileStage(element: React.ReactElement): StageNode | null {
+		let el = resolveElement(element, isPrimitiveComponent);
+		if (!el) return null;
+		const { stage: stageName, displayName, pool, children, dependsOn, condition, variables } = (el.props as any);
+		const jobs: JobNode[] = [];
+		flattenChildren(children).forEach(child => {
+			const resolved = resolveElement(child, isPrimitiveComponent);
+			if (resolved && resolved.type === Job) {
+				const job = this._compileJob(resolved);
+				if (job) jobs.push(job);
+			}
+		});
+		return {
 			stage: stageName,
 			displayName,
 			pool: typeof pool === 'string' ? { name: pool } : pool,
 			dependsOn,
 			condition,
 			variables,
-			jobs: [],
+			jobs,
 		};
-
-		if (children) {
-			if (Array.isArray(children)) {
-				stage.jobs = children.map(child => this.compileJob(child)).filter(Boolean) as JobNode[];
-			} else if (React.isValidElement(children)) {
-				const job = this.compileJob(children);
-				if (job) {
-					stage.jobs.push(job);
-				}
-			}
-		}
-
-		return stage;
 	}
 
-	private compileJob(element: React.ReactElement): JobNode | null {
-		if (!React.isValidElement(element) || element.type !== Job) {
-			return null;
-		}
-
-		const { job: jobName, displayName, condition, continueOnError, pool, dependsOn, children } = element.props as PropsWithChildren<Omit<JobNode, 'steps'>>;
-
-		const job: JobNode = {
+	private _compileJob(element: React.ReactElement): JobNode | null {
+		let el = resolveElement(element, isPrimitiveComponent);
+		if (!el) return null;
+		const { job: jobName, displayName, condition, continueOnError, pool, dependsOn, variables, workspace, children } = (el.props as any);
+		// Deeply collect all Step elements from children, including custom components/fragments
+		const steps: TaskNode[] = collectSteps(children).map(child => this._compileStep(child)!).filter(Boolean);
+		return {
 			job: jobName,
 			displayName,
 			condition,
 			continueOnError,
 			dependsOn,
 			pool,
-			steps: [],
+			workspace,
+			variables,
+			steps,
 		};
-
-		if (children) {
-			if (Array.isArray(children)) {
-				job.steps = children.map(child => this.compileStep(child)).filter(Boolean) as TaskNode[];
-			} else if (React.isValidElement(children)) {
-				const step = this.compileStep(children);
-				if (step) {
-					job.steps.push(step);
-				}
-			}
-		}
-
-		return job;
 	}
 
-	private compileStep(element: React.ReactElement): TaskNode | null {
-		if (!React.isValidElement(element) || element.type !== Step) {
-			return null;
+	private _compileStep(element: React.ReactElement): TaskNode | null {
+		let el = resolveElement(element, isPrimitiveComponent);
+		if (!el) return null;
+		const { enabled, ...step } = el.props as TaskNode;
+		if (typeof enabled !== 'undefined' && !enabled) {
+			debug('Step is disabled, skipping:', step.task);
+			return null; // Skip disabled steps
 		}
 
-		const { task, inputs, condition, continueOnError, displayName, env } = element.props as TaskNode;
-
-		const taskNode: TaskNode = {
-			task,
-			displayName,
-			env,
-			condition,
-			continueOnError,
-			inputs,
-		};
-
-		return taskNode;
+		return step;
 	}
 
 	public render(pipeline: PipelineNode): string {
-		return yaml.dump(pipeline, { noRefs: true, noArrayIndent: true });
+		return yaml.dump(pipeline, { noRefs: true, noArrayIndent: true, lineWidth: -1 });
 	}
 }
 

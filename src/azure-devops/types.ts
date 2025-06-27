@@ -55,13 +55,14 @@ export type JobNode = {
 };
 
 // Types for Azure DevOps pipeline
-export type TaskNode = {
+export type TaskNode<TInputs = Record<string, string | number | boolean | string[] | number[] | boolean[]>> = {
 	task: string;
-	inputs?: Record<string, string | number | boolean | string[] | number[] | boolean[]>;
+	enabled?: boolean;
 	condition?: string;
 	continueOnError?: boolean;
 	displayName?: string;
 	env?: Record<string, string>;
+	inputs?: TInputs;
 };
 
 export type Node = PipelineNode | TriggerNode | PoolNode | VariablesNode | StageNode | JobNode | TaskNode;

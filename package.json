@@ -4,15 +4,13 @@
 	"description": "Compile JSX/TSX React components into Azure DevOps YAML pipelines (and more platforms in the future)",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"bin": "dist/bin.js",
 	"scripts": {
 		"build": "tsc --build",
 		"test": "vitest run",
+		"test:cli": "tsx ./src/bin.ts ./examples/pipeline.tsx --out ./examples/pipeline.generated.yaml",
 		"dev": "vitest watch",
-		"compile": "tsx cli/render.ts",
 		"lint": "eslint . --ext .ts,.tsx"
-	},
-	"bin": {
-		"pipeline-components": "dist/bin.js"
 	},
 	"keywords": [
 		"azure-devops",

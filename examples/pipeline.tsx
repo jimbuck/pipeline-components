@@ -1,22 +1,24 @@
-import React from "react";
-import { Pipeline, Job, Task } from "../src/azure-devops";
+import React, { PropsWithChildren } from "react";
+import { Pipeline, Job, Powershell, Pwsh, Bash } from "../src/azure-devops";
 
-function CustomTask() {
+function Measure({ suffix, children }: PropsWithChildren<{ suffix: string }>) {
 	return (
 		<>
-			<Task displayName="PreHook" inputs={{ script: 'echo Pre-task' }} />
-			<Task displayName="Main" inputs={{ script: 'echo Main task' }} />
-			<Task displayName="PostHook" inputs={{ script: 'echo Post-task' }} />
+			<Pwsh displayName={`Start Timer ${suffix}`}>start {suffix}</Pwsh>
+			{children}
+			<Pwsh displayName={`Stop Timer ${suffix}`}>stop {suffix}</Pwsh>
 		</>
 	);
 }
-
-export default (
-	<Pipeline>
-		<Job displayName="Build" pool={{ vmImage: "ubuntu-latest" }}>
-			<Task displayName="Install" inputs={{ script: "npm install" }} />
-			<CustomTask />
-			<Task displayName="Test" inputs={{ script: "npm test" }} />
+export default function () {
+	return (
+		<Pipeline trigger={{ branches: { include: ["main"] } }}>
+			<Job job="Build" displayName="Build" pool={{ vmImage: "ubuntu-latest" }}>
+				<Measure suffix="install-and-build">
+					<Powershell displayName="Install" >npm install</Powershell>
+					<Bash displayName="Test">npm test</Bash>
+				</Measure>
 		</Job>
 	</Pipeline>
-);
+	);
+}

@@ -1,8 +1,9 @@
 import React from 'react';
-
-import azureDevOpsYamlRenderer from './azure-devops/renderer';
-import { PipelineRenderer } from './shared/renderer';
 import debugFactory from 'debug';
+
+import azureDevOpsYamlRenderer from './azure-devops/renderer.js';
+import { PipelineRenderer } from './shared/renderer.js';
+
 
 const debug = debugFactory('pipeline-components:renderer');
 
