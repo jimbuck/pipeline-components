@@ -1,6 +1,6 @@
 {
 	"name": "pipeline-components",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"description": "Compile JSX/TSX React components into Azure DevOps YAML pipelines (and more platforms in the future)",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
