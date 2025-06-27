@@ -25,9 +25,12 @@
 	"author": "Jim Buck <jim@jimbuck.io>",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jimbuck/pipeline-components.git"
+		"url": "https://github.com/jimbuck/pipeline-components"
 	},
 	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
 	"dependencies": {
 		"debug": "^4.4.1",
 		"fast-glob": "^3.3.3",
