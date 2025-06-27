@@ -10,7 +10,8 @@
 		"test": "vitest run",
 		"test:cli": "tsx ./src/bin.ts ./examples/pipeline.tsx --out ./examples/pipeline.generated.yaml",
 		"dev": "vitest watch",
-		"lint": "eslint . --ext .ts,.tsx"
+		"lint": "eslint",
+		"lint:fix": "eslint --fix"
 	},
 	"keywords": [
 		"azure-devops",
@@ -29,15 +30,20 @@
 		"react-reconciler": "^0.32.0"
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.29.0",
 		"@types/debug": "^4.1.12",
+		"@types/eslint": "^9.6.1",
 		"@types/js-yaml": "^4.0.5",
 		"@types/react": "^19.1.0",
 		"@types/react-reconciler": "^0.32.0",
-		"@typescript-eslint/eslint-plugin": "^6.0.0",
-		"@typescript-eslint/parser": "^6.0.0",
-		"eslint": "^8.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.35.0",
+		"@typescript-eslint/parser": "^8.35.0",
+		"eslint": "^9.29.0",
+		"eslint-plugin-react": "^7.37.5",
+		"globals": "^16.2.0",
 		"tsx": "^4.7.0",
 		"typescript": "^5.0.0",
+		"typescript-eslint": "^8.35.0",
 		"vitest": "^1.0.0"
 	}
 }

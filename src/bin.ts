@@ -1,20 +1,20 @@
 #!/usr/bin/env node
-import path from "path";
-import fs from "fs";
-import process from "process";
-import { pathToFileURL } from "url";
+import path from 'path';
+import fs from 'fs';
+import process from 'process';
+import { pathToFileURL } from 'url';
 
-import { renderPipeline } from "./renderer.js";
+import { renderPipeline } from './renderer.js';
 
 const [, , inputPath, ...args] = process.argv;
 
 if (!inputPath) {
-  console.error("Usage: npx pipeline-components <input.tsx> [--out output.yaml]");
+  console.error('Usage: npx pipeline-components <input.tsx> [--out output.yaml]');
   process.exit(1);
 }
 
 const outputPath = (() => {
-  const idx = args.indexOf("--out");
+  const idx = args.indexOf('--out');
   return idx >= 0 ? args[idx + 1] : null;
 })();
 
@@ -27,7 +27,7 @@ const outputPath = (() => {
 
   if (outputPath) {
     if (!yaml) {
-      console.error("Failed to render pipeline to YAML.");
+      console.error('Failed to render pipeline to YAML.');
       process.exit(1);
     }
     fs.writeFileSync(outputPath, yaml);
