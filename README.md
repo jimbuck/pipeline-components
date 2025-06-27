@@ -442,19 +442,10 @@ MIT © Pipeline Components Contributors
 
 ---
 
-## 🙏 Acknowledgments
-
-- **React Team** - For the amazing React reconciler API
-- **Azure DevOps Team** - For comprehensive YAML pipeline documentation  
-- **TypeScript Team** - For making JavaScript development actually enjoyable
-- **All Contributors** - You make this project possible! 🎉
-
----
-
 <div align="center">
 
-**Made with ❤️ by developers who were tired of debugging YAML indentation**
+**Made with ❤️ by developers who were tired of messy Enterprise YAML**
 
-[⭐ Star us on GitHub](https://github.com/yourusername/azdo-pipeline-components) • [📚 Documentation](https://docs.example.com) • [🐛 Report Bug](https://github.com/yourusername/azdo-pipeline-components/issues) • [💡 Request Feature](https://github.com/yourusername/azdo-pipeline-components/issues)
+[⭐ Star us on GitHub](https://github.com/jimbuck/pipeline-components) • [📚 Documentation](https://github.com/jimbuck/pipeline-components) • [🐛 Report Bug](https://github.com/jimbuck/pipeline-components/issues) • [💡 Request Feature](https://github.com/jimbuck/pipeline-components/issues)
 
 </div>
