@@ -1,10 +1,10 @@
 # 🚀 Pipeline Components
 
-> _Because writing YAML shouldn't feel like solving a crossword puzzle in a foreign language_ 🧩
+> _Because YAML pipelines deserve composability too_ 🧩
 
-**Transform your CI/CD pipelines from YAML nightmares into beautiful, composable React components!** 
+**Transform your CI/CD pipelines from YAML nightmares into beautiful, composable React components!**
 
-Pipeline Components lets you write composable pipelines (currently GitHub Actions and Azure DevOps Pipelines) using familiar JSX/TSX syntax. Say goodbye to YAML indentation hell and hello to type-safe, reusable, and maintainable pipeline definitions.
+Pipeline Components lets you write composable pipelines (currently GitHub Actions and Azure DevOps Pipelines) using familiar JSX/TSX syntax. Say goodbye to copy-pasta YAML chaos and hello to type-safe, reusable, and maintainable pipeline definitions.
 
 ```tsx
 // Instead of this YAML chaos...
@@ -84,10 +84,10 @@ export default function MyPipeline() {
 2. **Compile to YAML**:
 
 ```bash
-npx pipeline-components my-pipeline.tsx --out azure-pipelines.yml
+npx pipeline-components my-pipeline.tsx
 ```
 
-3. **Profit!** 🎉 Your `azure-pipelines.yml` is ready to use in Azure DevOps!
+3. **Profit!** 🎉 Your `my-pipeline.generated.yml` is ready to use in Azure DevOps!
 
 ---
 
@@ -302,8 +302,8 @@ npx pipeline-components src/pipelines/*.tsx
 # Multiple globs or files
 npx pipeline-components src/azure-devops/*.tsx src/github-actions/*.tsx
 
-# Output to file (only valid with a single input file)
-npx pipeline-components my-pipeline.tsx --out azure-pipelines.yml
+# Output to a specific directory (all generated files will be placed in this directory)
+npx pipeline-components tools/workflows/my-pipeline.tsx --out .github/workflows
 
 # With npm script
 npm run build:pipeline
@@ -314,10 +314,12 @@ npm run build:pipeline
 | Option   | Description                                   | Example                         |
 |----------|-----------------------------------------------|---------------------------------|
 | `<input>`| One or more file paths or globs to process     | `src/**/*.tsx`                  |
+| `--out`  | Specify output directory for generated files   | `--out dist/pipelines`          |
 | `--help` | Show help information                         | `--help`                        |
 
+- Output files are named using the same name as the input file, but with `.generated.<extension>` (currently `.generated.yaml` for YAML renderers).
+- If `--out <dir>` is specified, all generated files will be placed in the given directory. If not specified, output files are placed in the same directory as their input file.
 - You can specify one or more file paths or glob patterns as input. All matched files will be rendered to their respective output files (e.g., `my-pipeline.generated.yaml`).
-- If you use `--out`, it only applies when a single input file is provided.
 - **Note:** Only files that have a default export (i.e., `export default function ...`) will generate pipelines. Files without a default export are ignored. The example pipelines in this repository are a prime example of this feature—each pipeline component is exported as default.
 
 ---

@@ -4,14 +4,27 @@ import fs from 'node:fs/promises';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import fg from 'fast-glob';
+import { Command } from 'commander';
 
 import { renderPipeline, getFileExtension } from './renderer.js';
 
-const [, , ...inputPaths] = process.argv;
+const program = new Command();
+
+program
+  .name('pipeline-components')
+  .description('Render pipeline components from TSX files to YAML/JSON')
+  .argument('<inputs...>', 'Input TSX files or globs')
+  .option('--out <dir>', 'Specify output directory for generated files')
+  .version('1.0.0')
+  .helpOption('-h, --help', 'Show this help message');
+
+program.parse(process.argv);
+
+const inputPaths = program.args;
+const outDir = program.opts().out;
 
 if (!inputPaths || inputPaths.length === 0) {
-  console.error('Usage: npx pipeline-components <input1.tsx> ... <inputN.tsx>');
-  process.exit(1);
+  program.help({ error: true });
 }
 
 (async () => {
@@ -35,7 +48,11 @@ if (!inputPaths || inputPaths.length === 0) {
       }
 
       const ext = getFileExtension(tree);
-      const outputPath = path.join(path.dirname(absPath), `${path.basename(absPath, path.extname(absPath))}.${ext}`);
+      const outputBase = `${path.basename(absPath, path.extname(absPath))}.generated.${ext}`;
+      const outputPath = outDir
+        ? path.join(outDir, outputBase)
+        : path.join(path.dirname(absPath), outputBase);
+      await fs.mkdir(path.dirname(outputPath), { recursive: true });
       await fs.writeFile(outputPath, output);
       console.log(`Rendered pipeline to ${outputPath}`);
     } catch (error) {
