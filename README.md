@@ -6,7 +6,7 @@
 
 Pipeline Components lets you write composable pipelines (currently GitHub Actions and Azure DevOps Pipelines) using familiar JSX/TSX syntax. Say goodbye to copy-pasta YAML chaos and hello to type-safe, reusable, and maintainable pipeline definitions.
 
-```tsx
+```yaml
 // Instead of this YAML chaos...
 trigger:
   branches:
@@ -15,7 +15,9 @@ jobs:
 - job: Build
   displayName: Build
   # ... 50 more lines of YAML confusion
+```
 
+```tsx
 // Write this beautiful JSX! ✨
 <Pipeline trigger={{ branches: { include: ["main"] } }}>
   <Job job="Build" displayName="Build" pool={{ vmImage: "ubuntu-latest" }}>
@@ -211,42 +213,35 @@ export default function GitHubWorkflow() {
 
 ```tsx
 import React from 'react';
-import { Pipeline, Job, Powershell, Bash } from 'pipeline-components/azure-devops';
+import { Pipeline, Stage, Job, Bash } from 'pipeline-components/azure-devops';
 
-interface PipelineProps {
-  environment: 'dev' | 'staging' | 'production';
-  includeE2E?: boolean;
-}
+export default function ConditionalPipeline() {
+  // Pipeline variable names stored as constants for reusability
+  const IS_MAIN = 'isMain';
 
-export default function ConditionalPipeline({ environment, includeE2E = false }: PipelineProps) {
-  const isProduction = environment === 'production';
-  
   return (
-    <Pipeline trigger={{ branches: { include: ["main"] } }}>
-      <Job job="CI" displayName={`🚀 ${environment.toUpperCase()} Build`} 
-           pool={{ vmImage: isProduction ? "ubuntu-latest" : "ubuntu-20.04" }}>
-        
-        <Powershell displayName="📦 Install">npm ci</Powershell>
-        <Bash displayName="🧪 Test">npm test</Bash>
-        
-        {includeE2E && (
-          <Bash displayName="🎭 E2E Tests">npm run test:e2e</Bash>
-        )}
-        
-        <Bash displayName="🏗️ Build">
-          {isProduction 
-            ? "npm run build:production" 
-            : "npm run build:development"
-          }
-        </Bash>
-        
-        {isProduction && (
-          <>
-            <Powershell displayName="🔐 Security Scan">npm audit</Powershell>
-            <Bash displayName="📊 Performance Test">npm run test:perf</Bash>
-          </>
-        )}
-      </Job>
+    <Pipeline
+      trigger={{ branches: { include: ["main"] } }}
+      variables={[{
+          name: VARIABLES.IS_MAIN,
+          value: "$[eq(variables['Build.SourceBranch'], 'refs/heads/main')]"
+        }]}
+    >
+      <Stage stage="A">
+        <Job job="A1">
+          <Bash>echo Hello Stage A!</Bash>
+        </Job>
+      </Stage>
+
+      <Stage
+        stage="B"
+        condition={`and(succeeded(), eq(variables.${VARIABLES.IS_MAIN}, true))`}
+      >
+        <Job job="B1">
+          <Bash>echo Hello Stage B!</Bash>
+          <Bash>echo $(${VARIABLES.IS_MAIN})</Bash>
+        </Job>
+      </Stage>
     </Pipeline>
   );
 }
@@ -255,7 +250,7 @@ export default function ConditionalPipeline({ environment, includeE2E = false }:
 </details>
 
 <details>
-<summary><b>🔧 Multi-Platform Matrix Builds</b></summary>
+<summary><b>🔧 Custom Matrix Builds</b></summary>
 
 ```tsx
 import React from 'react';
@@ -277,10 +272,7 @@ export default function MatrixPipeline() {
           displayName={`🧪 Test on ${platform.name}`}
           pool={{ vmImage: platform.vmImage }}
         >
-          <Powershell displayName={`📦 Install Node ${platform.nodeVersion}`}>
-            # Install Node.js {platform.nodeVersion}
-            npm ci
-          </Powershell>
+          <Powershell displayName={`📦 Install Node ${platform.nodeVersion}`}>npm ci</Powershell>
           <Powershell displayName="🧪 Run Tests">npm test</Powershell>
         </Job>
       ))}
@@ -335,9 +327,10 @@ JSX Components → Pipeline AST → YAML Output
 ### Supported Platforms
 
 - ✅ **Azure DevOps** - Full support for pipelines, stages, jobs, and tasks
-- 🚧 **GitHub Actions** - Coming soon!
-- 📋 **Jenkins** - Planned for future release
+- 🚧 **GitHub Actions** - Partial support for workflows, jobs, and steps.
+- 📋 **Jenkins** - Possible future release
 - 📋 **GitLab CI** - Planned for future release
+- 📋 **CircleCI** - Planned for future release
 
 ---
 
@@ -393,7 +386,7 @@ npm run lint
 
 ### 🎯 Areas We Need Help With
 
-- 🚧 **GitHub Actions Support**: Help us build the GitHub Actions renderer
+- 🚧 **GitHub Actions Support**: Help us expand the GitHub Actions renderer
 - 📚 **Documentation**: More examples and tutorials
 - 🧪 **Testing**: Edge cases and complex scenarios
 - 🎨 **Component Library**: More built-in reusable components
